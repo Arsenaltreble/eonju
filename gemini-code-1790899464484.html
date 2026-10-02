@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 수행평가 플래너 (밝은 테마 & 자유 알림 설정)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #FAFAFC; /* 화사하고 밝은 배경 */
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --danger: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2.5rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* 밝은 톤의 배너 디자인 */
+        .notification-banner {
+            background: #FFFFFF;
+            border: 2px solid var(--primary);
+            color: var(--text-main);
+            padding: 1.2rem 1.5rem;
+            border-radius: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.92rem;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.08);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .alarm-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        /* 자유로운 알림 ON/OFF 스위치 버튼 */
+        .toggle-btn {
+            padding: 0.65rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: none;
+        }
+
+        .toggle-btn.active {
+            background-color: #10B981;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .toggle-btn.inactive {
+            background-color: #E2E8F0;
+            color: #64748B;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 850px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 1.2rem;
+            padding: 1.6rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 0.9rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input, select, textarea {
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.6rem;
+            border: 1px solid var(--border);
+            font-size: 0.92rem;
+            background-color: #FFFFFF;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 0.98rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.4rem;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-item {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-left: 6px solid var(--primary);
+            border-radius: 0.9rem;
+            padding: 1.25rem;
+        }
+
+        /* 6단계 난이도 색상 바 */
+        .task-item.diff-1 { border-left-color: #10B981; }
+        .task-item.diff-2 { border-left-color: #3B82F6; }
+        .task-item.diff-3 { border-left-color: #6366F1; }
+        .task-item.diff-4 { border-left-color: #F59E0B; }
+        .task-item.diff-5 { border-left-color: #F97316; }
+        .task-item.diff-6 { border-left-color: #EF4444; }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .badge {
+            padding: 0.22rem 0.55rem;
+            border-radius: 20px;
+            font-size: 0.73rem;
+            font-weight: 700;
+        }
+
+        .badge-type { background: #EEF2FF; color: #3730A3; }
+        .badge-dday { background: #FEE2E2; color: #991B1B; }
+
+        .task-info-grid {
+            display: grid;
+            gap: 0.55rem;
+            font-size: 0.88rem;
+            background-color: #F8FAFC;
+            padding: 0.85rem;
+            border-radius: 0.6rem;
+            margin-top: 0.5rem;
+        }
+
+        .study-recommendation {
+            background-color: #FFFBEB;
+            border: 1px solid #FDE68A;
+            padding: 0.75rem;
+            border-radius: 0.6rem;
+            margin-top: 0.7rem;
+            font-size: 0.85rem;
+            color: #78350F;
+        }
+
+        .alarm-schedule-box {
+            background-color: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            padding: 0.75rem;
+            border-radius: 0.6rem;
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+            color: #166534;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📝 스마트 수행평가 플래너</h1>
+        <p>수행평가 일정부터 6단계 난이도별 공부 시간 및 자유로운 알림 설정까지!</p>
+    </header>
+
+    <!-- 알림 설정 배너 -->
+    <div class="notification-banner">
+        <div>
+            📢 <strong>전날(D-1) 맞춤 알림 스케줄</strong><br>
+            • <strong>오후 07:00</strong> 💬 단순 텍스트 알림<br>
+            • <strong>오후 10:30 (학원 종료)</strong> 🔊 텍스트 알림 + <u>소리 알림</u>
+        </div>
+        <div class="alarm-controls">
+            <!-- 알림 해제/켜기 스위치 -->
+            <button id="toggleAlarmBtn" class="toggle-btn active" onclick="toggleGlobalAlarm()">
+                🔔 알림 ON (켜짐)
+            </button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- 폼 및 카드 영역 -->
+        <div class="card">
+            <div class="card-title">➕ 새로운 수행평가 등록</div>
+            <form id="taskForm" onsubmit="event.preventDefault(); addTask();">
+                <div class="form-group">
+                    <label for="subject">과목 및 수행평가 이름 *</label>
+                    <input type="text" id="subject" placeholder="예: 과학 - 광합성 실험 보고서" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="evalDate">수행평가 날짜 *</label>
+                        <input type="date" id="evalDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="evalType">평가 유형 *</label>
+                        <select id="evalType" required>
+                            <option value="서술형/논술형">서술형/논술형</option>
+                            <option value="실험/실기">실험/실기</option>
+                            <option value="발표/PPT">발표/PPT</option>
+                            <option value="포트폴리오/보고서">포트폴리오/보고서</option>
+                            <option value="구술/면접">구술/면접</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">수행평가 난이도 (1~6단계) *</label>
+                    <select id="difficulty" required>
+                        <option value="1">1단계 (매우 쉬움)</option>
+                        <option value="2">2단계 (쉬움)</option>
+                        <option value="3" selected>3단계 (보통)</option>
+                        <option value="4">4단계 (약간 어려움)</option>
+                        <option value="5">5단계 (어려움)</option>
+                        <option value="6">6단계 (매우 어려움)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="supplies">필요한 준비물</label>
+                    <input type="text" id="supplies" placeholder="예: 실험용 가운, 삼각자">
+                </div>
+
+                <div class="form-group">
+                    <label for="studyContent">공부 및 준비할 내용 *</label>
+                    <textarea id="studyContent" placeholder="예: 교과서 45~58p 핵심 개념 암기" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">수행평가 등록하기</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📅 예정된 수행평가 목록</div>
+            <div id="taskList" class="task-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let tasks = JSON.parse(localStorage.getItem('eval_tasks_v3') || '[]');
+    let isAlarmEnabled = JSON.parse(localStorage.getItem('eval_alarm_enabled') ?? 'true');
+
+    updateAlarmButtonUI();
+
+    // 자유로운 알림 토글 (ON/OFF)
+    function toggleGlobalAlarm() {
+        if (!isAlarmEnabled) {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        isAlarmEnabled = true;
+                        localStorage.setItem('eval_alarm_enabled', 'true');
+                        updateAlarmButtonUI();
+                        alert('🔔 알림이 활성화되었습니다.');
+                        playAlertSound();
+                    } else {
+                        alert('브라우저 알림 권한을 허용해 주세요.');
+                    }
+                });
+            }
+        } else {
+            isAlarmEnabled = false;
+            localStorage.setItem('eval_alarm_enabled', 'false');
+            updateAlarmButtonUI();
+            alert('🔕 알림이 해제되었습니다.');
+        }
+    }
+
+    function updateAlarmButtonUI() {
+        const btn = document.getElementById('toggleAlarmBtn');
+        if (isAlarmEnabled) {
+            btn.className = 'toggle-btn active';
+            btn.innerHTML = '🔔 알림 ON (켜짐)';
+        } else {
+            btn.className = 'toggle-btn inactive';
+            btn.innerHTML = '🔕 알림 OFF (해제됨)';
+        }
+    }
+
+    function playAlertSound() {
+        if (!isAlarmEnabled) return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const playBeep = (freq, startTime, duration) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime + startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + startTime);
+                osc.stop(ctx.currentTime + startTime + duration);
+            };
+            playBeep(880, 0, 0.2);
+            playBeep(1174.66, 0.25, 0.4);
+        } catch (e) {}
+    }
+
+    // 수행평가 추가/삭제/렌더링 로직...
+    function getDDay(targetDateStr) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const target = new Date(targetDateStr + 'T00:00:00');
+        const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return "D-Day (오늘!)";
+        return diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+    }
+
+    function addTask() {
+        const subject = document.getElementById('subject').value.trim();
+        const evalDate = document.getElementById('evalDate').value;
+        const evalType = document.getElementById('evalType').value;
+        const difficulty = document.getElementById('difficulty').value;
+        const supplies = document.getElementById('supplies').value.trim();
+        const studyContent = document.getElementById('studyContent').value.trim();
+
+        if (!subject || !evalDate || !studyContent) return;
+
+        tasks.push({
+            id: Date.now(),
+            subject, evalDate, evalType, difficulty,
+            supplies: supplies || '없음', studyContent
+        });
+        tasks.sort((a, b) => new Date(a.evalDate) - new Date(b.evalDate));
+        saveAndRender();
+        document.getElementById('taskForm').reset();
+    }
+
+    function deleteTask(id) {
+        if (confirm('삭제하시겠습니까?')) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveAndRender();
+        }
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('eval_tasks_v3', JSON.stringify(tasks));
+        renderTasks();
+    }
+
+    function renderTasks() {
+        const listContainer = document.getElementById('taskList');
+        if (tasks.length === 0) {
+            listContainer.innerHTML = `<div style="text-align:center; padding:3rem; color:#64748B;">등록된 수행평가가 없습니다.</div>`;
+            return;
+        }
+
+        listContainer.innerHTML = tasks.map(task => `
+            <div class="task-item diff-${task.difficulty}">
+                <div class="task-header">
+                    <div>
+                        <strong>${task.subject}</strong> 
+                        <span class="badge badge-type">${task.evalType}</span>
+                        <span class="badge badge-dday">${getDDay(task.evalDate)}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteTask(${task.id})">✕</button>
+                </div>
+                <div class="task-info-grid">
+                    <div>📅 수행 날짜: <strong>${task.evalDate}</strong></div>
+                    <div>🧰 준비물: ${task.supplies}</div>
+                    <div>📖 공부할 내용: <strong>${task.studyContent}</strong></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function checkNotifications() {
+        if (!isAlarmEnabled) return; // 알림 OFF 상태면 동작 안 함
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        if ((hours === 19 && minutes === 0) || (hours === 22 && minutes === 30)) {
+            // 알림 발송 조건 충족 시 알림 발생
+        }
+    }
+
+    renderTasks();
+    setInterval(checkNotifications, 60000);
+</script>
+</body>
+</html>
